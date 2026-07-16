@@ -78,22 +78,30 @@ class ProjectScanner:
         "db/__init__.py": "DB package",
         "db/models.py": "SQLAlchemy/DB models",
         "db/session.py": "DB session management",
-        # Frontend
-        "frontend/index.html": "Frontend entry",
-        "frontend/package.json": "Frontend dependencies",
-        "frontend/vite.config.ts": "Vite config",
-        "frontend/tsconfig.json": "TypeScript config",
-        "frontend/src/main.tsx": "React entry point",
-        "frontend/src/App.tsx": "Main App component",
-        "frontend/src/components/PetitionCard.tsx": "Petition card component",
-        "frontend/src/components/PetitionList.tsx": "Petition list/feed",
-        "frontend/src/components/PetitionDetail.tsx": "Petition detail view",
-        "frontend/src/components/ShareSheet.tsx": "Share sheet with image generation",
-        "frontend/src/components/FilterBar.tsx": "Filter/search bar",
-        "frontend/src/hooks/usePetitions.ts": "Petitions data hook",
-        "frontend/src/types/petition.ts": "TypeScript types",
-        "frontend/src/styles/global.css": "Global styles",
-        "frontend/public/manifest.json": "PWA manifest",
+        # Mobile App (React Native + Expo)
+        "mobile/package.json": "Mobile app dependencies (Expo + React Native)",
+        "mobile/app.json": "Expo app config (bundle ID, icons, splash)",
+        "mobile/tsconfig.json": "TypeScript config for mobile",
+        "mobile/babel.config.js": "Babel config for Expo",
+        "mobile/eas.json": "EAS Build configuration (preview, production profiles)",
+        "mobile/app/_layout.tsx": "Root layout (expo-router)",
+        "mobile/app/index.tsx": "Home screen — petition discovery feed",
+        "mobile/app/petition/[id].tsx": "Petition detail screen",
+        "mobile/app/about.tsx": "About / Impressum / Datenschutz screen",
+        "mobile/src/components/PetitionCard.tsx": "Petition card component (swipeable)",
+        "mobile/src/components/PetitionFeed.tsx": "FlatList-based petition feed",
+        "mobile/src/components/PetitionDetail.tsx": "Petition detail view",
+        "mobile/src/components/ShareSheet.tsx": "Share sheet with native image generation",
+        "mobile/src/components/FilterBar.tsx": "Filter/search bar",
+        "mobile/src/components/ProgressBar.tsx": "Signature progress bar",
+        "mobile/src/components/SourceBadge.tsx": "Source platform badge (color-coded)",
+        "mobile/src/components/SkeletonCard.tsx": "Loading skeleton for petition cards",
+        "mobile/src/hooks/usePetitions.ts": "Petitions data hook (fetch from API)",
+        "mobile/src/hooks/usePushNotifications.ts": "Push notification hook (Expo Notifications)",
+        "mobile/src/api/client.ts": "API client (base URL, fetch wrapper)",
+        "mobile/src/types/petition.ts": "TypeScript types for petition data",
+        "mobile/src/constants/sources.ts": "Source platform definitions (colors, labels, URLs)",
+        "mobile/src/styles/theme.ts": "App theme (colors, spacing, typography)",
         # Tests
         "tests/__init__.py": "Tests package",
         "tests/test_api.py": "API endpoint tests",
@@ -143,13 +151,12 @@ class ProjectScanner:
         self.server_ok = code == 0 and "OK" in out
 
     def _check_frontend(self):
-        # Check if frontend builds
-        frontend_dir = WORKSPACE / "frontend"
-        if not frontend_dir.exists():
+        # Check if mobile app structure exists
+        mobile_dir = WORKSPACE / "mobile"
+        if not mobile_dir.exists():
             self.frontend_ok = False
             return
-        # Just check if package.json exists and node_modules are present
-        self.frontend_ok = (frontend_dir / "package.json").exists()
+        self.frontend_ok = (mobile_dir / "package.json").exists()
 
     def has_critical_gaps(self):
         return bool(self.missing) or not self.tests_pass or not self.server_ok
@@ -313,7 +320,7 @@ Description: {task.get('body', '')}
 
 Project context: PetitionsRadar is a mobile-first petition discovery app for Germany.
 It aggregates petition links from Bundestag, openPetition, Change.org, WeAct, and petitionsportal.de.
-Backend: FastAPI + PostgreSQL. Frontend: React + Vite PWA.
+Backend: FastAPI + PostgreSQL. Mobile app: React Native + Expo (iOS + Android, single codebase).
 Read GOAL.md, PO_DECISIONS.md, and docs/QUALITY_BAR.md for full requirements.
 
 Create a brief implementation plan: files to change, key decisions, test strategy.
@@ -329,18 +336,19 @@ Description: {task.get('body', '')}
 Plan: {plan}
 
 Project context: PetitionsRadar is a mobile-first petition discovery app for Germany.
-Backend: FastAPI + PostgreSQL. Frontend: React + Vite PWA.
+Backend: FastAPI + PostgreSQL. Mobile app: React Native + Expo (iOS + Android, single codebase).
 Read GOAL.md, PO_DECISIONS.md, and docs/QUALITY_BAR.md for requirements.
 
 1. Read existing code for context
 2. TDD: tests first, verify fail, implement, verify pass
 3. Run: cd {WORKSPACE} && python3 -m pytest tests/ -v
-4. For frontend files: also run cd {WORKSPACE}/frontend && npm test -- --run if vitest is set up
+4. For mobile app files: also run cd {WORKSPACE}/mobile && npx expo lint if available
 5. Commit with descriptive message
 
 Do NOT install packages or modify files outside {WORKSPACE}.
 Use python3 for all Python commands.
-For frontend: use npm, TypeScript, functional components with hooks."""
+For mobile app: use npm/npx, TypeScript, React Native functional components with hooks.
+Every component must work on BOTH iOS and Android. Use SafeAreaView, Platform.select() where needed."""
     out, err, code = run(f"{AGY_BIN} --print-timeout 10m --print '{_sq(prompt)}'", timeout=TIMEOUT)
     return {"output": out or "", "errors": err or "", "success": code == 0}
 
@@ -357,7 +365,8 @@ Tests: {tests[-1500:]}
 
 Check against docs/QUALITY_BAR.md standards:
 - Type hints, docstrings, Pydantic models (backend)
-- TypeScript types, functional components, responsive design (frontend)
+- TypeScript types, functional components, works on iOS AND Android (mobile app)
+- SafeAreaView used, Platform.select() where needed
 - Tests pass and cover new functionality
 - No bare except, proper error handling
 - API follows RESTful patterns with consistent JSON envelope

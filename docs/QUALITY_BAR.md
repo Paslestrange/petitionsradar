@@ -13,17 +13,20 @@ What "good" looks like for this project. The autonomous worker must meet these s
 - **Async where possible** — scraping and API endpoints use async/await
 - **Config via environment** — no hardcoded URLs, ports, DB credentials
 
-### TypeScript/React (Frontend)
+### TypeScript/React Native (Mobile App)
 - **Functional components + hooks** only, no class components
 - **Typed props** with TypeScript interfaces
 - **No any** — use unknown + type narrowing if type is uncertain
-- **Responsive by default** — all components work 360px → 1920px
-- **Lighthouse mobile > 85** — performance, accessibility, best practices, SEO
-- **PWA installable** — manifest.json, service worker, offline shell
+- **React Native components** — use FlatList for petition feed, Reanimated for swipe gestures
+- **expo-router** for navigation (file-based routing, works on iOS + Android)
+- **Platform-specific code** where needed — use Platform.select() for platform differences
+- **Native push notifications** via Expo Notifications — request permissions, handle tokens
+- **Works on iOS and Android** — every component must render correctly on both platforms
+- **Lighthouse N/A** — but run `expo doctor` and `eas build` validation must pass
 
 ### Tests
 - **Backend:** pytest, ≥ 80% coverage on API routes and scraper modules
-- **Frontend:** vitest for unit tests, Playwright for E2E smoke tests
+- **Frontend:** vitest for unit tests, Jest + React Native Testing Library for component tests
 - **Every PR includes tests** for new functionality
 - **Tests must pass before merge** — no exceptions
 
@@ -37,10 +40,11 @@ What "good" looks like for this project. The autonomous worker must meet these s
 ## UX Quality
 
 ### Mobile-First
-- **Touch targets ≥ 44px** — Apple HIG minimum
+- **Touch targets ≥ 44px** — Apple HIG minimum, also Material Design minimum
 - **Thumb zone** — primary actions (swipe, sign button) in bottom third of screen
-- **No horizontal scroll** on any viewport ≥ 360px
-- **Fast perceived load** — skeleton screens, not spinners
+- **Safe area insets** — respect iOS notch / Android status bar via SafeAreaView
+- **Native gestures** — swipe to dismiss cards, pull to refresh
+- **Smooth 60fps animations** — use Reanimated worklets, not JS-driven animations
 
 ### Petition Card
 Must show:
@@ -53,22 +57,28 @@ Must show:
 
 ### Share Image Generation
 - **1080×1920px** — Instagram Story format
+- Rendered natively via `react-native-view-shot` → capture a composed View → save as image
 - Contains: petition title, progress bar, source platform, QR code linking to source_url
 - **Readable in 3 seconds** — high contrast, large text
 - **No PetitionsRadar watermark larger than 5%** of image — this is about the cause, not us
+- **Share via native share sheet** — `expo-sharing` to hand off to Instagram, TikTok, WhatsApp, etc.
 
 ### Accessibility
-- **WCAG 2.1 AA** — semantic HTML, ARIA where needed, keyboard navigable
+- **WCAG 2.1 AA** — semantic roles, accessibilityLabel on all touchable elements
 - **Color contrast ≥ 4.5:1** for text
-- **Screen reader tested** — at least one test with NVDA or VoiceOver
+- **Dynamic type** — respect iOS Dynamic Type and Android font scaling
+- **VoiceOver / TalkBack tested** — at least one test per screen with each platform's screen reader
 
 ## Deployment Quality
 
-- **systemd service** with auto-restart (Restart=always, RestartSec=5)
+- **systemd service** with auto-restart (Restart=always, RestartSec=5) for backend API
 - **Health check endpoint** at /api/health returning 200 + JSON status
 - **Structured logging** — JSON logs to stdout, captured by journald
 - **Zero-downtime restart** not required for MVP, but restart must complete < 5s
-- **Accessible on localhost + LAN + VPN** (ZeroTier IP)
+- **Backend accessible on localhost + LAN + VPN** (ZeroTier IP)
+- **EAS build validation** — `eas build --profile preview` must succeed for both iOS and Android before merge
+- **OTA updates** — non-breaking JS changes ship via EAS Update without store review; native changes require store builds
+- **App store readiness** — proper app icons, splash screens, bundle IDs configured in app.json/app.config.ts
 
 ## Legal
 

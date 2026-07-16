@@ -37,7 +37,6 @@ PetitionsRadar aggregates petition **links and metadata** from multiple sources 
 - We do NOT collect signatures or personal data beyond what's needed for push notifications
 - We do NOT replace any petition platform — we are a discovery layer only
 - We do NOT host petition content — we link to official sources
-- We do NOT build native iOS/Android apps initially — PWA first, native later if traction warrants
 
 ## Target Audience
 
@@ -46,7 +45,11 @@ PetitionsRadar aggregates petition **links and metadata** from multiple sources 
 
 ## Tech Direction
 
-- **Frontend:** React + Vite PWA (mobile-first, offline-capable, installable)
+- **Mobile apps:** React Native + Expo (single TypeScript codebase → iOS + Android)
+  - Expo EAS for OTA updates and store builds
+  - Native push notifications (Expo Notifications API)
+  - Share sheet via `expo-sharing` + `react-native-view-shot` for Instagram/TikTok image generation
+  - WebView for opening official petition signing pages
 - **Backend:** Python FastAPI (metadata aggregation, scheduled scraping of public pages, push notification management)
 - **Data:** PostgreSQL for petition metadata, Redis for caching scraped content
 - **Scraping:** Respectful, rate-limited metadata extraction from public petition listing pages — no authentication, no signature submission

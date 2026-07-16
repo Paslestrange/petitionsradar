@@ -16,11 +16,17 @@ htmlcov/
 .coverage
 .coverage.*
 
-# Node/Frontend
+# Node/Mobile (Expo + React Native)
 node_modules/
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/.easignore
+*.tsbuildinfo
+
+# Expo EAS
+.eas/
 
 # IDE
 .vscode/

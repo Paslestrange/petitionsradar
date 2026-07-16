@@ -34,7 +34,6 @@
 - Trending algorithm (velocity of signatures, not just total count)
 - Petition of the day / curated homepage
 - Multi-language (English for international solidarity sharing)
-- Native app wrapper (Capacitor)
 
 ### Won't Have (explicitly)
 - Signature collection or proxying
@@ -74,7 +73,8 @@ Petition:
 ```
 
 ### Tech Stack Decision
-- **React + Vite PWA** over Next.js — lighter, faster, PWA-native. No SSR needed for an app-like experience.
+- **React Native + Expo** over Capacitor/PWA — true native components, native push notifications, App Store + Play Store distribution, better performance for swipeable card feeds
+- **Expo EAS** for over-the-air updates (push JS bundle updates without store review) and managed store builds
 - **FastAPI** over Django — async scraping + API in one process, lighter footprint
 - **PostgreSQL** over SQLite — concurrent scraping + API reads, future-proof
 - **Playwright** for scraping — handles JS-rendered platforms (openPetition, Change.org use client-side rendering)
