@@ -22,6 +22,10 @@ from pathlib import Path
 
 WORKSPACE = Path("/home/pascal/workspace/petitionsradar")
 LOCK_FILE = WORKSPACE / ".worker.lock"
+# Shared lock across all autonomous workers (Metaphors, PetitionsRadar, etc.)
+# Prevents concurrent agy/hermes sessions from different projects
+SHARED_LOCK_FILE = Path("/home/pascal/workspace/.autonomous-worker.lock")
+SHARED_LOCK_TIMEOUT = 900  # 15 min — if a worker dies, another can claim after this
 REMOTE = "origin"
 BRANCH = "main"
 AGY_BIN = "/home/pascal/.local/bin/agy"
@@ -399,20 +403,48 @@ Only fix listed issues. Follow docs/QUALITY_BAR.md standards."""
 # ─── Main ──────────────────────────────────────────────────────────
 
 def acquire_lock():
+    """Prevent overlapping worker runs — both within this project and across projects."""
+    # 1. Project-local lock: prevents same worker overlapping with itself
     if LOCK_FILE.exists():
         try:
             pid = int(LOCK_FILE.read_text().strip())
             os.kill(pid, 0)
-            log(f"Another worker running (pid {pid}), skipping")
+            log(f"Another PetitionsRadar worker running (pid {pid}), skipping")
             return False
         except (ValueError, ProcessLookupError, PermissionError):
             pass
+
+    # 2. Shared cross-project lock: prevents Metaphors + PetitionsRadar workers
+    #    from running agy/hermes concurrently (API rate limits, CPU contention)
+    if SHARED_LOCK_FILE.exists():
+        try:
+            content = SHARED_LOCK_FILE.read_text().strip().split(":")
+            pid = int(content[0])
+            lock_time = float(content[1]) if len(content) > 1 else 0
+            os.kill(pid, 0)  # Check if process is alive
+            if lock_time and (time.time() - lock_time > SHARED_LOCK_TIMEOUT):
+                log(f"Shared lock held by dead process {pid} for >{SHARED_LOCK_TIMEOUT}s, claiming it")
+            else:
+                log(f"Shared lock held by pid {pid} (another project's worker), skipping")
+                return False
+        except (ValueError, ProcessLookupError, PermissionError):
+            pass  # Stale lock, claim it
+
     LOCK_FILE.write_text(str(os.getpid()))
+    SHARED_LOCK_FILE.write_text(f"{os.getpid()}:{time.time()}")
     return True
 
 def release_lock():
+    """Release both project-local and shared locks."""
     try:
         LOCK_FILE.unlink(missing_ok=True)
+    except Exception:
+        pass
+    # Only release shared lock if we own it
+    try:
+        content = SHARED_LOCK_FILE.read_text().strip().split(":")
+        if content and content[0] == str(os.getpid()):
+            SHARED_LOCK_FILE.unlink(missing_ok=True)
     except Exception:
         pass
 
