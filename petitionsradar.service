@@ -1,0 +1,15 @@
+[Unit]
+Description=PetitionsRadar — Mobile-first petition discovery app for Germany
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pascal/workspace/petitionsradar
+ExecStart=/home/pascal/workspace/petitionsradar/.venv/bin/python3 server.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+Environment=PETITIONS_APP_PORT=8090
+
+[Install]
+WantedBy=default.target
