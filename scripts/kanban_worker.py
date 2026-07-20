@@ -168,7 +168,7 @@ class ProjectScanner:
 # ─── Task Creator ──────────────────────────────────────────────────
 
 def existing_tasks():
-    out, _, _ = run("hermes kanban list --json 2>/dev/null")
+    out, _, _ = run("hermes kanban --board petitionsradar list --json 2>/dev/null")
     try:
         return json.loads(out)
     except (json.JSONDecodeError, KeyError):
@@ -180,7 +180,7 @@ def task_exists(title):
 def create_task(title, body):
     if task_exists(title):
         return False
-    run(f'hermes kanban create "{_sq(title)}" --assignee default --body "{_sq(body)}"')
+    run(f'hermes kanban --board petitionsradar create "{_sq(title)}" --assignee default --body "{_sq(body)}"')
     return True
 
 def auto_create_tasks(scanner):
@@ -302,7 +302,7 @@ def get_app_version():
 # ─── Kanban Operations ─────────────────────────────────────────────
 
 def get_next_task():
-    out, _, code = run("hermes kanban list --json 2>/dev/null")
+    out, _, code = run("hermes kanban --board petitionsradar list --json 2>/dev/null")
     if code != 0 or not out:
         return None
     try:
