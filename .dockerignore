@@ -1,0 +1,64 @@
+# Python / Environments / Build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Testing & Coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+htmlcov/
+.coverage
+.coverage.*
+.tox/
+
+# Node / Mobile (Expo + React Native)
+node_modules/
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/.easignore
+*.tsbuildinfo
+.eas/
+
+# Git & Version Control
+.git/
+.gitignore
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment & Config local overrides
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Database & Lock files
+*.db
+*.sqlite3
+*.sqlite
+.worker.lock
+
+# Screenshots & Documentation output
+screenshots/
+.hermes/
+
+# OS metadata & Logs
+.DS_Store
+Thumbs.db
+*.log
